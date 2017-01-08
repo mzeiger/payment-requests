@@ -1,0 +1,600 @@
+<!DOCTYPE HTML>
+
+<html>
+
+<head>
+  <title>MHK Payment Request</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
+    <!-- Optional Bootstrap theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css">
+
+  <style type="text/css">
+    .fieldset-auto-width {
+         display: inline-block;
+    }
+
+    .panel {
+        padding-left: 5px;
+        padding-right: 5px;
+        padding-top: 2px;
+        padding-bottom: 2px;
+    }
+
+    .panel-heading {
+        padding-bottom: 1px;
+        padding-top: 1px;
+    }
+    .requiredStar {
+        color:red;
+        font-size: 18px;
+        font-weight: bold;
+    }
+    .error {
+      border: 1px solid red;
+    }
+
+   .modal {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba(220, 220, 220, .8)
+                url('http://i.stack.imgur.com/FhHRx.gif')
+                50% 50%
+                no-repeat;
+    }
+
+    /* When the body has the loading class, we turn
+       the scrollbar off with overflow:hidden */
+    body.loading {
+        overflow: hidden;
+    }
+
+    /* Anytime the body has the loading class, our
+       modal element will be visible */
+    body.loading .modal {
+        display: block;
+    }
+
+    .tblTreasurersDirectory th, td {
+       border: 1px solid black;
+       border-collapse;
+       padding: 4px;
+       text-align: left;
+    }
+
+
+  </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+
+        <div class="page-header well" style="text-align: center; margin-top: 2px; padding: 1px;">
+            <h2>Monument Hill Kiwanis</h2>
+            <h2>Vendor Payment / Member Reimbursement Request Form</h2>
+        </div>
+
+        <div class="row" id="resultsRow" >
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">Results</div>
+                    <div class="panel-body" id="results"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="requestFormDiv">
+            <form  method="post" id="requestForm" enctype="multipart/form-data" action="#" class="form-horizontal" >
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">Requestor Information <span style="color:red;"> * = required field</span> </div>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label for="firstname" class="col-xs-4 control-label">First Name: <span class="requiredStar">*</span></label>
+                                    <div class="col-xs-4">
+                                        <input type="text" name="firstname" id="firstname" placeholder="First Name" class="form-control"/>
+                                    </div>
+                                </div> <!-- form=group -->
+                                <div class="form-group">
+                                    <label for="lastname" class="col-xs-4 control-label">Last Name: <span class="requiredStar">*</span></label>
+                                    <div class="col-xs-4">
+                                        <input type="text" name="lastname" id="lastname" placeholder="Last Name" class="form-control"/>
+                                    </div>
+                                </div> <!-- form-group -->
+                                <div class="form-group">
+                                    <label for="reqEmail" class="col-xs-4 control-label">Email: </label>
+                                    <div class="col-xs-4">
+                                        <input type="text" name="reqEmail" id="reqEmail" placeholder="Email" maxlength="40" class="form-control"/><br/>
+                                    </div>
+                                </div> <!-- form-group -->
+
+                                <div class="form-group">
+                                    <label class="col-xs-4 control-label">Vendor Pmt or Member Reimburse? <span class="requiredStar">*</span></label>
+                                    <div class="col-xs-5">
+                                        <div class="radio">
+                                            <label>
+                                                <input type="radio" name="vendorOrReimburse" value="vendor">Vendor payment
+                                            </label>
+                                        </div> <!-- radio -->
+                                        <div class="radio">
+                                            <label>
+                                                 <input type="radio" name="vendorOrReimburse" value="reimburse">Member reimbursement
+                                            </label> <span id="vendorOrReimburseErrorSpan"></span>
+                                        </div> <!-- radio -->
+                                    </div> <!-- col-xs-5 -->
+                                </div> <!-- form-group -->
+
+                                <div class="form-group">
+                                    <label class="col-xs-4 control-label">Issue Check or Credit Account?
+                                         <br/><span class="hideIfVendor" style="color:red;">* required if &ldquo;member reimbursement&rdquo; choosen</span></label>
+                                    <div class="col-xs-5">
+                                        <div class="radio">
+                                            <label>
+                                                <input type="radio" name="checkOrCredit" value="check"/>Issue me a check
+                                            </label>
+                                        </div> <!-- radio -->
+                                        <div class="radio">
+                                            <label>
+                                                <input type="radio" name="checkOrCredit" value="credit"/>Credit my account
+                                            </label> <span id="checkOrCreditErrorSpan"></span>
+                                        </div> <!-- radio -->
+                                    </div> <!-- col-xs-5 -->
+                                </div> <!-- form-group -->
+                            </div> <!-- panel-body -->
+                        </div> <!-- panel panel-default -->
+                    </div>  <!-- col-md-12 -->
+                </div>  <!-- row -->
+
+                    <div class="row equal-height-panels">
+                        <div class="col-md-7">
+                            <div class="panel panel-default equal-height-panels">
+                                <div class="panel-heading">Payment Information<span style="color:red;"> * = required field</span></div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label for="payto" class="col-xs-3 control-label">Payee: <span class="requiredStar">*</span></label>
+                                        <div class="col-xs-6">
+                                            <input type="text" name="payto" id="payto" class="form-control" placeholder="Payee Name" maxlength="50"/>
+                                        </div>
+                                    </div> <!-- form-group -->
+
+                                    <div class="form-group">
+                                        <label class="col-xs-4 control-label">Recurring Vendor?
+                                             <br/><span class="hideIfReimburse" style="color:red;">* required if &ldquo;vendor payment&rdquo; choosen</span></label>
+                                        <div class="col-xs-5">
+                                            <div class="radio">
+                                                <label>
+                                                    <input type="radio" name="reoccurringVendor" value="yes"/>Yes
+                                                </label>
+                                            </div> <!-- radio -->
+                                            <div class="radio">
+                                                <label>
+                                                    <input type="radio" name="reoccurringVendor" value="no"/>No
+                                                </label> <span id="reoccurringVendorErrorSpan"></span>
+                                            </div> <!-- radio -->
+                                        </div> <!-- col-xs-5 -->
+                                    </div> <!-- form-group -->
+
+                                    <div class="form-group">
+                                        <label for="paytoAddress" class="col-xs-3 control-label">Payee Address:<span class="hideIfReimburse requiredStar">*</span></label>
+                                        <div class="col-xs-6">
+                                            <input type="text" name="paytoAddress" id="paytoAddress" class="form-control" placeholder="Address" maxlength="40"/>
+                                        </div>
+                                    </div> <!-- form-group -->
+
+                                    <div class="form-group">
+                                        <label for="paytoCity" class="col-xs-3 control-label">City:<span class="hideIfReimburse requiredStar">*</span> </label>
+                                        <div class="col-xs-6">
+                                            <input type="text" name="paytoCity" id="paytoCity" class="form-control" placeholder="City" maxlength="30"/>
+                                        </div>
+                                    </div> <!-- form-group -->
+
+                                    <div class="form-group">
+                                        <label for="paytoState" class="col-xs-3 control-label">State:<span class="hideIfReimburse requiredStar">*</span> </label>
+                                        <div class="col-xs-2">
+                                            <input type="text" name="paytoState" id="paytoState" class="form-control" placeholder="State" maxlength="2"/>
+                                        </div>
+                                    </div> <!-- form-group -->
+
+                                    <div class="form-group">
+                                        <label for="paytoZip" class="col-xs-3 control-label">Zip: </label>
+                                        <div class="col-xs-3">
+                                            <input type="text" name="paytoZip" id="paytoZip" class="form-control" placeholder="Zip Code" maxlength="5"/>
+                                        </div>
+                                    </div> <!-- form-group -->
+
+                                    <div class="form-group">
+                                        <label for="paytoEmail" class="col-xs-3 control-label">Payee Email:</label>
+                                        <div class="col-xs-6">
+                                            <input type="text" name="paytoEmail" id="paytoEmail" class="form-control" placeholder="Payee Email" maxlength="40" />
+                                        </div>
+                                    </div> <!-- form-group -->
+
+                                    <div class="form-group">
+                                        <label for="pmtAmount" class="col-xs-3 control-label">Payment Amt:<span class="requiredStar">*</span> </label>
+                                        <div class="col-xs-3">
+                                            <input type="text" name="pmtAmount" id="pmtAmount" class="form-control" placeholder="Payment Amt" maxlength="12" />
+                                        </div>
+                                    </div> <!-- form-group -->
+
+                                    <div class="form-group">
+                                        <label for="projectName" class="col-xs-3 control-label">Project Name:<span class="requiredStar">*</span> </label>
+                                        <div class="col-xs-6">
+                                            <input type="text" name="projectName" id="projectName" class="form-control" placeholder="Project name" maxlength="20" />
+                                        </div>
+                                    </div> <!-- form-group -->
+
+                                    <div class="form-group">
+                                        <label for="glNumber" class="col-xs-3 control-label">Acct #:</label>
+                                        <div class="col-xs-3">
+                                            <input type="text" name="glNumber" id="glNumber" class="form-control" placeholder="Exp Acct No" maxlength="7"/>
+                                        </div>
+                                    </div> <!-- form-group -->
+
+                                    <div class="form-group">
+                                        <label for="reqComment" class="col-xs-3 control-label">Purpose of purchase (300 chars max): <span class="requiredStar">*</span></label>
+                                        <div class="col-xs-8">
+                                            <textarea id="reqComment" name="reqComment" rows="3" cols="90" class="form-control" maxlength="300"></textarea>
+                                        </div>
+                                    </div> <!-- form-group -->
+
+                                </div> <!-- panel-body -->
+                            </div> <!-- panel panel-default -->
+                        </div> <!-- col-md-* -->
+
+                        <div class="col-md-5">
+                            <div class="panel panel-default equal-height-panels">
+                                <div class="panel-heading">Routing Information<span style="color:red;"> * = required field</span></div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label>Send for approval to:</label><br/>
+                                        <label for="pmName" class="col-xs-5 control-label">Approver&rsquo;s Name:<span class="requiredStar">*</span> </label>
+                                        <div class="col-xs-7">
+                                            <input type="text" name="pmName" id="pmName" class="form-control" maxlength="60"placeholder="Approver&rsquo;s Full Name"/>
+                                        </div>
+                                    </div> <!-- form-group -->
+
+                                    <div class="form-group">
+                                        <label for="pmEmail" class="col-xs-5 control-label">Approver&rsquo;s Email:<span class="requiredStar">*</span> </label>
+                                        <div class="col-xs-7">
+                                            <input type="text" name="pmEmail" id="pmEmail" class="form-control" maxlength="40" placeholder="Approver&rsquo;s Email"/>
+                                        </div>
+                                        <div style="margin-top: 5px; padding: 15px;" class="col-xs-12 control-label">
+                                            <label style="text-align: left;">
+                                                &ldquo;Approver&rdquo; is the project manager.
+                                                If you are the project manager then &ldquo;Approver&rdquo; is an assistant treasurer or the treasurer.
+                                                If you are both project manager and assistant treasurer then &ldquo;Approver&rdquo; is another assistant
+                                                treasurer or the treasurer.<br/><br/> The &ldquo;Bookkeeper&rdquo; will always be notified of a request.<br/>
+                                            </label>
+                                            <div><table id="treasurersdirectory" cellpadding="2px"></table></div>
+                                            <br/>
+                                            <div style="text-align: center;"><button id="guidelines">Display Payment Guidelines</button></div>
+                                        </div>
+                                    </div> <!-- form-group -->
+
+                                </div>  <!-- panel-body -->
+                            </div> <!-- panel panel-default -->
+                        </div>  <!-- col-md-5 -->
+                    </div> <!-- row -->
+
+                    <div class="row" id="errorsRow">
+                        <div class="col-md-12">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">Errors</div>
+                                <div class="panel-body" id="errorsDiv"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">Receipts</div>
+                                <div class="panel-body">
+                                    <label for="receipts" class="">Attach receipts:</label>
+                                    <table>
+                                        <tr>
+                                            <td style="width: 40%;"><input type="file" name="receipts[]" id="xFile1" class="filestyle" /></td>
+                                            <td>&nbsp;&nbsp;&nbsp;<button id="clearFile1">Clear</button></td>
+                                            <td rowspan="3">If you can not scan in a receipt and attach the scanned
+                                            file here then you must get the receipt to the &ldquo;Approver&rdquo; in another manner.</td>
+                                        </tr>
+                                        <tr>
+                                            <td><input type="file" name="receipts[]" id="xFile2" class="filestyle"/></td>
+                                            <td>&nbsp;&nbsp;&nbsp;<button id="clearFile2">Clear</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td><input type="file" name="receipts[]" id="xFile3"class="filestyle"/></td>
+                                            <td>&nbsp;&nbsp;&nbsp;<button id="clearFile3">Clear</button></td>
+                                        </tr>
+                                    </table>
+                                    <br/>
+                                    <div style="text-align: center;"><input type="submit" value="Submit" /></div>
+
+                                    <div id="showErrorDiv"></div>
+
+                               </div> <!-- panel-body -->
+                            </div> <!-- panel panel-default -->
+                        </div> <!-- col-md-12 -->
+                    </div> <!-- row -->
+            </form>
+        </div> <!-- requestFormDiv -->
+
+        <div id="errorsDiv"></div> <!-- this is where we show the validation errors -->
+    </div> <!-- Container -->
+    <div class="modal"><!-- Place at bottom of page --></div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.matchHeight/0.7.0/jquery.matchHeight.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+    <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/additional-methods.min.js"></script>
+    <script src="bootstrap-filestyle-1.2.1/src/bootstrap-filestyle.min.js"></script>
+   <!-- <script src="bootstrap-fileinput-master/js/plugins/canvas-to-blob.min.js"></script>
+    <script src="bootstrap-fileinput-master/js/fileinput.min.js"></script>  -->
+
+
+    <script>
+        $(document).ready(function() {
+            $('.equal-height-panels .panel').matchHeight();
+            $("#resultsRow").hide();
+            $("#requestFormDiv").show();
+            setValidation();
+            $("#errorsRow").hide();
+            setTreasurersDirectory();
+            $("#placeToHideDefaultErrorPlacement").hide(); //will never be shown
+            $('input[name="vendorOrReimburse"]').click(function() {
+                                                            if ($(this).val() == 'vendor')
+                                                                hideForVendor()
+                                                            else
+                                                                hideForReimburse()});
+           $("#clearFile1").click( clearFile1);
+           $("#clearFile2").click( clearFile2);
+           $("#clearFile3").click( clearFile3);
+           // On a refresh the file name doesn't show but the file object is still populated do clear it
+           $("#xFile1").filestyle('clear');
+           $("#xFile2").filestyle('clear');
+           $("#xFile3").filestyle('clear');
+           $("#guidelines").click( function(e) {
+               e.preventDefault();
+               window.open("guidelines.pdf");
+           });
+        });
+
+        function setTreasurersDirectory() {
+            $.get("gettreasurersdirectory.php",
+                function(data) {
+                    $("#treasurersdirectory").html(data);
+                    $("#treasurersdirectory").addClass("tblTreasurersDirectory");
+                }
+            );
+        }
+
+        function clearFile1(e) {
+               e.preventDefault();
+               $("#xFile1").filestyle('clear');
+        }
+         function clearFile2(e) {
+               e.preventDefault();
+               $("#xFile2").filestyle('clear');
+        }
+        function clearFile3(e) {
+               e.preventDefault();
+               $("#xFile3").filestyle('clear');
+        }
+
+        function hideForVendor() {
+            $(".hideIfVendor").hide();
+            $(".hideIfReimburse").show();
+        }
+
+        function hideForReimburse() {
+            $(".hideIfVendor").show();
+            $(".hideIfReimburse").hide();
+        }
+
+        function viewResults(data, status) {
+           $("#results").html(data);
+           $("#requestFormDiv").hide();
+           $("#resultsRow").show();
+        }
+
+      function setValidation() // jQuery validation for the "Registration" form
+      {
+          $("#requestForm").validate(
+              {
+                onclick: false,
+                rules:
+                  {
+                  firstname:
+                      {
+                      required: true
+                      }
+                      ,
+                  lastname:
+                      {
+                      required: true
+                      }
+                      ,
+                  reqEmail:
+                      {
+                        email: true
+                      },
+                  payto:
+                    {
+                        required: true
+                    },
+                  paytoAddress:
+                    {
+                        required: {
+                            depends: function() {
+                                    return $('input[name=vendorOrReimburse]:checked').val() == 'vendor';
+                                 }
+                            }
+                    },
+                  paytoCity:
+                    {
+                        required: {
+                            depends: function() {
+                                    return $('input[name=vendorOrReimburse]:checked').val() == 'vendor';
+                                 }
+                        }
+                    },
+                  paytoState:
+                    {
+                        required: {
+                            depends: function() {
+                                    return $('input[name=vendorOrReimburse]:checked').val() == 'vendor';
+                                 }
+                        }
+                    },
+                  paytoEmail:
+                    {
+                        email: true
+                    },
+                   pmtAmount:
+                    {
+                        required: true,
+                        number: true
+                    },
+                  projectName:
+                    {
+                        required: true
+                    },
+                  reqComment:
+                    {
+                        required: true
+                    },
+                  pmName:
+                    {
+                        required: true
+                    },
+                  pmEmail:
+                    {
+                        required: true,
+                        email: true
+                    },
+                  vendorOrReimburse:
+                    {
+                        required:true
+                    } ,
+                  checkOrCredit:
+                  {
+                    required: {
+                        depends: function() {
+                                    return $('input[name=vendorOrReimburse]:checked').val() == 'reimburse';
+                                 }
+                    }
+                  } ,
+                  reoccurringVendor:
+                  {
+                    required: {
+                        depends: function() {
+                                    return $('input[name=vendorOrReimburse]:checked').val() == 'vendor';
+                                 }
+                    }
+                  }
+                } //end rules
+                ,
+                messages: {
+                    firstname: {required : "First Name is required"},
+                    lastname: {required : "Last Name is required"},
+                    reqEmail: {email: "Requestor email is not in correct email format (not required - may be left blank)"},
+                    vendorOrReimburse: {required: 'Must select either "Vendor Payment" or "Member Reimbursement"'},
+                    checkOrCredit: {required: 'Must select "Issue Check" or "Credit Account" if "Member Reimbursement" is selected'},
+                    reoccurringVendor: {required: 'Must make a "Recurring Vendor" selection if "Vendor Payment" is selected' },
+                    payto: {required: "Payee is required"},
+                    paytoAddress: {required: "Pay To address is required"},
+                    paytoCity: {required: "Pay To City is required"},
+                    paytoState: {required: "Pay To state is required"},
+                    paytoEmail: {email: "Pay To email is not in correct email format (not required - may be left blank)"},
+                    pmtAmount: {required: "Payment amount is required", number: "Payment Amount must be a number"},
+                    projectName: {required: 'Project name must be entered ("None" is acceptable)' },
+                    pmName: {required: "Enter name of Project Manager or first approver"},
+                    pmEmail: {required: "Project manager or first approver's email is required",
+                               email: "Project manager or first approver's email is not in correct email format"},
+                    reqComment: {required: "Purpose of payment request must be entered"}
+                }, // end messages
+
+
+              errorPlacement: function(error, element)
+                  {
+                      var x = element.attr("name");
+                      var y = element.attr("value");
+
+                      if (element.attr("name") === "checkOrCredit")
+                          error.appendTo($("#checkOrCreditErrorSpan"));
+                      if (element.attr("name") === "vendorOrReimburse" )
+                          error.appendTo($("#vendorOrReimburseErrorSpan"));
+                      if (element.attr("name") === "reoccurringVendor")
+                          error.appendTo($("#reoccurringVendorErrorSpan"));
+                  }
+                  ,
+              invalidHandler: function(form, validator) {
+                  var errors = validator.numberOfInvalids();
+
+                  var headerMsg = (errors == 1) ? "error:" : errors + " errors";
+                  var msg = "<u>Please correct the following " + headerMsg + " <span style='color: red;'>(fields with errors are in red)</span>:</u><br/>";
+                  for (var i= 0; i < validator.errorList.length; i++) {
+                     msg += validator.errorList[i].message + "<br/>";
+                  }
+
+                  $("#errorsDiv").html(msg);
+                  if (errors > 0)
+                    $("#errorsRow").show();
+                  else
+                    $("#errorsRow").hide();
+                 // validator.focusInValid();
+                  return false;
+              },
+              submitHandler: function(form)
+                  {
+                      // form.submit();
+                      //var formData = $("#registerForm").serialize();
+                      //$.post("register.php", formData, registerResult); // Calls the registerResult() function after success
+                      //  submit(function(event) {
+                      //  event.preventDefault();
+                        //var formData = new FormData($("#requestForm")); //$("#requestForm").serialize();
+                        // $.post("upload.php", formData, viewResults);
+                      var x = $('#requestForm').get(0);
+                      $.ajax( {
+                            url: 'upload.php',
+                            type: 'POST',
+                            data: new FormData(x),  //formData,
+                            async: false,
+                            cache: false,
+                            contentType: false,
+                            processData: false,
+                            success: viewResults,
+    beforeSend: function(){
+     $('body').addClass('loading');
+   },
+   complete: function(){
+     $('body').removeClass('loading');
+   }
+   //
+                        });
+
+                      return false;
+                  }
+
+
+              });
+    }
+
+    </script>
+
+</body>
+
+</html>
